@@ -145373,7 +145373,7 @@ const github = __nccwpck_require__(5438);
 const _ = __nccwpck_require__(250);
 const config = __nccwpck_require__(4570);
 
-const runnerBasePath = config.input.runInOrgRunner ? "/orgs/{owner}" : "/repos/{owner}/{repo}"
+const runnerBasePath = config.input.runInOrgRunner ? "/orgs/{owner}" : "/repos/{owner}/{repo}";
 
 // use the unique label to find the runner
 // as we don't have the runner's id, it's not possible to get it in any other way
