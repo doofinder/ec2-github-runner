@@ -145037,7 +145037,7 @@ function buildUserDataScript(githubRegistrationToken, label) {
       'curl -O -L https://github.com/actions/runner/releases/download/v2.313.0/actions-runner-linux-${RUNNER_ARCH}-2.313.0.tar.gz',
       'tar xzf ./actions-runner-linux-${RUNNER_ARCH}-2.313.0.tar.gz',
       'export RUNNER_ALLOW_RUNASROOT=1',
-      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label}`,
+      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --replace --labels ${label}`,
     ];
   }
   if (config.input.runAsUser) {
@@ -145367,13 +145367,15 @@ const github = __nccwpck_require__(5438);
 const _ = __nccwpck_require__(250);
 const config = __nccwpck_require__(4570);
 
+const runnerBasePath = config.input.runInOrgRunner ? "/orgs/{owner}" : "/repos/{owner}/{repo}"
+
 // use the unique label to find the runner
 // as we don't have the runner's id, it's not possible to get it in any other way
 async function getRunner(label) {
   const octokit = github.getOctokit(config.input.githubToken);
 
   try {
-    const runners = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runners', config.githubContext);
+    const runners = await octokit.paginate(`GET ${runnerBasePath}/actions/runners`, config.githubContext);
     const foundRunners = _.filter(runners, { labels: [{ name: label }] });
     return foundRunners.length > 0 ? foundRunners[0] : null;
   } catch (error) {
@@ -145386,7 +145388,7 @@ async function getRegistrationToken() {
   const octokit = github.getOctokit(config.input.githubToken);
 
   try {
-    const response = await octokit.request('POST /repos/{owner}/{repo}/actions/runners/registration-token', config.githubContext);
+    const response = await octokit.request(`POST ${runnerBasePath}/actions/runners/registration-token`, config.githubContext);
     core.info('GitHub Registration Token is received');
     return response.data.token;
   } catch (error) {
@@ -145406,7 +145408,7 @@ async function removeRunner() {
   }
 
   try {
-    await octokit.request('DELETE /repos/{owner}/{repo}/actions/runners/{runner_id}', _.merge(config.githubContext, { runner_id: runner.id }));
+    await octokit.request(`DELETE ${runnerBasePath}/actions/runners/{runner_id}`, _.merge(config.githubContext, { runner_id: runner.id }));
     core.info(`GitHub self-hosted runner ${runner.name} is removed`);
     return;
   } catch (error) {
