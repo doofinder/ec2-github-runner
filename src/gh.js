@@ -3,7 +3,7 @@ const github = require('@actions/github');
 const _ = require('lodash');
 const config = require('./config');
 
-const runnerBasePath = config.input.runInOrgRunner ? "/orgs/{owner}" : "/repos/{owner}/{repo}"
+const runnerBasePath = config.input.runInOrgRunner ? "/orgs/{owner}" : "/repos/{owner}/{repo}";
 
 // use the unique label to find the runner
 // as we don't have the runner's id, it's not possible to get it in any other way

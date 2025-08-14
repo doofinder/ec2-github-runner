@@ -145011,6 +145011,8 @@ const { EC2Client, RunInstancesCommand, TerminateInstancesCommand, waitUntilInst
 const core = __nccwpck_require__(2186);
 const config = __nccwpck_require__(4570);
 
+const runnerBasePath = config.input.runInOrgRunner ? `${config.githubContext.owner}` : `${config.githubContext.owner}/${config.githubContext.repo}`
+
 // User data scripts are run as the root user
 function buildUserDataScript(githubRegistrationToken, label) {
   let userData;
@@ -145024,7 +145026,7 @@ function buildUserDataScript(githubRegistrationToken, label) {
       `echo "${config.input.preRunnerScript}" > pre-runner-script.sh`,
       'source pre-runner-script.sh',
       'export RUNNER_ALLOW_RUNASROOT=1',
-      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --replace --labels ${label}`,
+      `./config.sh --url https://github.com/${runnerBasePath} --token ${githubRegistrationToken} --replace --labels ${label}`,
     ];
   } else {
     userData = [
@@ -145037,7 +145039,7 @@ function buildUserDataScript(githubRegistrationToken, label) {
       'curl -O -L https://github.com/actions/runner/releases/download/v2.313.0/actions-runner-linux-${RUNNER_ARCH}-2.313.0.tar.gz',
       'tar xzf ./actions-runner-linux-${RUNNER_ARCH}-2.313.0.tar.gz',
       'export RUNNER_ALLOW_RUNASROOT=1',
-      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --replace --labels ${label}`,
+      `./config.sh --url https://github.com/${runnerBasePath} --token ${githubRegistrationToken} --replace --labels ${label}`,
     ];
   }
   if (config.input.runAsUser) {
@@ -145253,7 +145255,11 @@ class Config {
     // the values of github.context.repo.owner and github.context.repo.repo are taken from
     // the environment variable GITHUB_REPOSITORY specified in "owner/repo" format and
     // provided by the GitHub Action on the runtime
-    this.githubContext = {
+    this.githubContext = this.input.runInOrgRunner ? 
+    {
+      owner: github.context.repo.owner
+    } : 
+    {
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
     };
@@ -145367,7 +145373,7 @@ const github = __nccwpck_require__(5438);
 const _ = __nccwpck_require__(250);
 const config = __nccwpck_require__(4570);
 
-const runnerBasePath = config.input.runInOrgRunner ? "/orgs/{owner}" : "/repos/{owner}/{repo}"
+const runnerBasePath = config.input.runInOrgRunner ? "/orgs/{owner}" : "/repos/{owner}/{repo}";
 
 // use the unique label to find the runner
 // as we don't have the runner's id, it's not possible to get it in any other way
